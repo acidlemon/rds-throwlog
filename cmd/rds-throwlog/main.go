@@ -1,13 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
-	"path/filepath"
 
+	"github.com/acidlemon/rds-throwlog/mysqlslow"
+	"github.com/acidlemon/rds-throwlog/restrds"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/internal/protocol/rest"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -33,7 +33,7 @@ func main() {
 	svc.Handlers.Unmarshal.Clear()
 	svc.Handlers.Unmarshal.PushBack(rest.Unmarshal)
 
-	out, err := rdsDownloadCompleteDBLogFile(svc, &DownloadCompleteDBLogFileInput{
+	out, err := restrds.DownloadCompleteDBLogFile(svc, &restrds.DownloadCompleteDBLogFileInput{
 		DBInstanceIdentifier: dbid,
 		LogFileName:          path,
 	})
@@ -41,19 +41,32 @@ func main() {
 		log.Println(err)
 	}
 	defer out.Body.Close()
-	result, err := ioutil.ReadAll(out.Body)
-	if err != nil {
-		log.Println(err)
-		return
+	//result, err := ioutil.ReadAll(out.Body)
+	//if err != nil {
+	//	log.Println(err)
+	//	return
+	//}
+
+	log.Println("download completed")
+
+	records := mysqlslow.Parse(out.Body)
+	for _, r := range records {
+		data, err := json.Marshal(r)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(string(data))
 	}
 
-	dir := filepath.Dir(*path)
-	if dir != "." {
-		os.MkdirAll(dir, 0755)
-	}
+	/*
+		dir := filepath.Dir(*path)
+		if dir != "." {
+			os.MkdirAll(dir, 0755)
+		}
 
-	err = ioutil.WriteFile(*path, result, 0644)
-	if err != nil {
-		log.Println(err)
-	}
+		err = ioutil.WriteFile(*path, result, 0644)
+		if err != nil {
+			log.Println(err)
+		}
+	*/
 }

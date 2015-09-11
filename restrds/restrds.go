@@ -1,4 +1,4 @@
-package main
+package restrds
 
 import (
 	"io"
@@ -11,13 +11,13 @@ import (
 
 const opDownloadCompleteDBLogFile = "DownloadCompleteDBLogFile"
 
-func rdsDownloadCompleteDBLogFile(c *rds.RDS, input *DownloadCompleteDBLogFileInput) (*DownloadCompleteDBLogFileOutput, error) {
-	req, out := rdsDownloadCompleteDBLogFileRequest(c, input)
+func DownloadCompleteDBLogFile(c *rds.RDS, input *DownloadCompleteDBLogFileInput) (*DownloadCompleteDBLogFileOutput, error) {
+	req, out := DownloadCompleteDBLogFileRequest(c, input)
 	err := req.Send()
 	return out, err
 }
 
-func rdsDownloadCompleteDBLogFileRequest(c *rds.RDS, input *DownloadCompleteDBLogFileInput) (req *request.Request, output *DownloadCompleteDBLogFileOutput) {
+func DownloadCompleteDBLogFileRequest(c *rds.RDS, input *DownloadCompleteDBLogFileInput) (req *request.Request, output *DownloadCompleteDBLogFileOutput) {
 	if input == nil {
 		input = &DownloadCompleteDBLogFileInput{}
 	}
