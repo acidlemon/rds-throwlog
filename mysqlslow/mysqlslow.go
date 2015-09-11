@@ -148,3 +148,31 @@ type SlowLog struct {
 	NormalizedSql string    `json:"normalized_sql"`
 	rawsql        []byte
 }
+
+func (s SlowLog) ToFluentLog() (time.Time, FluentLog) {
+	return s.Time, FluentLog{
+		User:          s.User,
+		SrcUser:       s.SrcUser,
+		Host:          s.Host,
+		Address:       s.Address,
+		QueryTime:     s.QueryTime,
+		LockTime:      s.LockTime,
+		RowsSent:      s.RowsSent,
+		RowsExamined:  s.RowsExamined,
+		Sql:           s.Sql,
+		NormalizedSql: s.NormalizedSql,
+	}
+}
+
+type FluentLog struct {
+	User          string  `codec:"user"`
+	SrcUser       string  `codec:"src_user"`
+	Host          string  `codec:"host"`
+	Address       string  `codec:"address"`
+	QueryTime     float64 `codec:"query_time"`
+	LockTime      float64 `codec:"lock_time"`
+	RowsSent      int64   `codec:"rows_sent"`
+	RowsExamined  int64   `codec:"rows_examined"`
+	Sql           string  `codec:"sql"`
+	NormalizedSql string  `codec:"normalized_sql"`
+}

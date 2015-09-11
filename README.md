@@ -1,6 +1,6 @@
 # RDS ThrowLog
 
-Retrive slowlog, errorlog or general log etc... from Amazon RDS and send to fluentd.
+Retrive slowlog, errorlog or general log etc... from Amazon RDS and send to stdout(JSON) or fluentd.
 
 ## usage
 
