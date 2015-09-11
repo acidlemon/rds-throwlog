@@ -8,9 +8,6 @@ import (
 
 	"github.com/acidlemon/rds-throwlog/mysqlslow"
 	"github.com/acidlemon/rds-throwlog/restrds"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/internal/protocol/rest"
-	"github.com/aws/aws-sdk-go/service/rds"
 )
 
 func main() {
@@ -23,30 +20,11 @@ func main() {
 		return
 	}
 
-	svc := rds.New(&aws.Config{
-		Region: aws.String("ap-northeast-1"),
-		//LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody),
-	})
-	// RDSのHandlerはQuery APIになっているのでをREST APIに変更
-	svc.Handlers.Build.Clear()
-	svc.Handlers.Build.PushBack(rest.Build)
-	svc.Handlers.Unmarshal.Clear()
-	svc.Handlers.Unmarshal.PushBack(rest.Unmarshal)
-
-	out, err := restrds.DownloadCompleteDBLogFile(svc, &restrds.DownloadCompleteDBLogFileInput{
-		DBInstanceIdentifier: dbid,
-		LogFileName:          path,
-	})
+	stream, err := restrds.Fetch(dbid, path)
 	if err != nil {
 		log.Println(err)
+		return
 	}
-	defer out.Body.Close()
-	//result, err := ioutil.ReadAll(out.Body)
-	//if err != nil {
-	//	log.Println(err)
-	//	return
-	//}
-
 	log.Println("download completed")
 
 	records := mysqlslow.Parse(out.Body)

@@ -3,9 +3,32 @@ package restrds
 import (
 	"io"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/internal/protocol/rest"
 	"github.com/aws/aws-sdk-go/service/rds"
 )
+
+func Fetch(dbid, path string) (io.ReadCloser, error) {
+	svc := rds.New(&aws.Config{
+		Region: aws.String("ap-northeast-1"),
+		//LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody),
+	})
+	// RDSのHandlerはQuery APIになっているのでをREST APIに変更
+	svc.Handlers.Build.Clear()
+	svc.Handlers.Build.PushBack(rest.Build)
+	svc.Handlers.Unmarshal.Clear()
+	svc.Handlers.Unmarshal.PushBack(rest.Unmarshal)
+
+	out, err := DownloadCompleteDBLogFile(svc, &DownloadCompleteDBLogFileInput{
+		DBInstanceIdentifier: dbid,
+		LogFileName:          path,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return out.Body.Close(), nil
+}
 
 // implementation of DownloadCompleteDBLogFile
 
